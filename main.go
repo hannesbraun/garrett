@@ -9,11 +9,48 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"image/color"
 	"os"
 )
 
+type garretTheme struct{}
+
+func (m garretTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	if name == theme.ColorNamePrimary {
+		return color.RGBA{
+			R: 43,
+			G: 176,
+			B: 120,
+			A: 255,
+		}
+	}
+
+	return theme.DefaultTheme().Color(name, variant)
+}
+
+func (m garretTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
+	return theme.DefaultTheme().Icon(name)
+}
+
+func (garretTheme) Font(style fyne.TextStyle) fyne.Resource {
+	return theme.DefaultTheme().Font(style)
+}
+
+func (garretTheme) Size(name fyne.ThemeSizeName) float32 {
+	switch name {
+	case theme.SizeNameText:
+		return 12
+	case theme.SizeNameInlineIcon:
+		return 16
+	default:
+		return theme.DefaultTheme().Size(name)
+	}
+}
+
 func main() {
 	app := app.New()
+	app.Settings().SetTheme(&garretTheme{})
+
 	w := app.NewWindow("Garret")
 
 	inputFiles := binding.BindStringList(
