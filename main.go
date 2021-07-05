@@ -13,9 +13,9 @@ import (
 	"os"
 )
 
-type garretTheme struct{}
+type garrettTheme struct{}
 
-func (m garretTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+func (m garrettTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 	if name == theme.ColorNamePrimary {
 		return color.RGBA{
 			R: 43,
@@ -28,15 +28,15 @@ func (m garretTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) 
 	return theme.DefaultTheme().Color(name, variant)
 }
 
-func (m garretTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
+func (m garrettTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
 	return theme.DefaultTheme().Icon(name)
 }
 
-func (garretTheme) Font(style fyne.TextStyle) fyne.Resource {
+func (garrettTheme) Font(style fyne.TextStyle) fyne.Resource {
 	return theme.DefaultTheme().Font(style)
 }
 
-func (garretTheme) Size(name fyne.ThemeSizeName) float32 {
+func (garrettTheme) Size(name fyne.ThemeSizeName) float32 {
 	switch name {
 	case theme.SizeNameText:
 		return 12
@@ -49,9 +49,9 @@ func (garretTheme) Size(name fyne.ThemeSizeName) float32 {
 
 func main() {
 	app := app.New()
-	app.Settings().SetTheme(&garretTheme{})
+	app.Settings().SetTheme(&garrettTheme{})
 
-	w := app.NewWindow("Garret")
+	w := app.NewWindow("Garrett")
 
 	inputFiles := binding.BindStringList(
 		&[]string{},

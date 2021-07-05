@@ -1,4 +1,4 @@
-module garret
+module garrett
 
 go 1.16
 
