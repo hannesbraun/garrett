@@ -148,11 +148,18 @@ func main() {
 	progress := binding.BindFloat(&progressVal)
 	progressBar := widget.NewProgressBarWithData(progress)
 	statusLabel := widget.NewLabel("Idle")
+	running := false
 	startButton := widget.NewButton("Convert", func() {
-		progress.Set(0.0)
+		if running {
+			return
+		}
+
 		files, _ := inputFiles.Get()
-		convert(files, outDir, float64(sampleRate))
-		progress.Set(0.99)
+		go func(files []string, outDir string, sampleRate int, progress *binding.ExternalFloat, statusLabel **widget.Label) {
+			running = true
+			convert(files, outDir, float64(sampleRate), progress, statusLabel)
+			running = false
+		}(files, outDir, sampleRate, &progress, &statusLabel)
 	})
 	bottomContainer := container.NewBorder(progressBar, nil, nil, startButton, statusLabel)
 

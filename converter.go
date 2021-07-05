@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/widget"
 	"github.com/dh1tw/gosamplerate"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/mewkiz/flac"
@@ -15,10 +17,17 @@ import (
 	"strings"
 )
 
-func convert(files []string, outDir string, sampleRate float64) []string {
+func convert(files []string, outDir string, sampleRate float64, progress *binding.ExternalFloat, statusLabel **widget.Label) []string {
 	failed := make([]string, 0)
+	if len(files) <= 0 {
+		return failed
+	}
+	progressStep := 1.0 / (3.0 * float64(len(files)))
 
-	for _, file := range files {
+	for i, file := range files {
+		(*progress).Set(float64(3*i) * progressStep)
+		(*statusLabel).SetText("Decoding " + file)
+
 		mimeType, err := getFileContentType(file)
 		if err != nil {
 			failed = append(failed, file)
@@ -44,12 +53,21 @@ func convert(files []string, outDir string, sampleRate float64) []string {
 			continue
 		}
 
+		(*progress).Set(float64(3*i+1) * progressStep)
+		(*statusLabel).SetText("Resampling " + file)
+
 		// todo fix clicks
-		resampled, err := gosamplerate.Simple(track.data, sampleRate/track.sampleRate, int(track.channels), gosamplerate.SRC_SINC_BEST_QUALITY)
-		if err != nil {
-			failed = append(failed, file)
-			continue
+		resampled := track.data
+		if sampleRate != track.sampleRate {
+			resampled, err = gosamplerate.Simple(track.data, sampleRate/track.sampleRate, int(track.channels), gosamplerate.SRC_SINC_BEST_QUALITY)
+			if err != nil {
+				failed = append(failed, file)
+				continue
+			}
 		}
+
+
+		(*progress).Set(float64(3*i+2) * progressStep)
 
 		// Todo support variable amount of channels
 		var samples []wav.Sample
@@ -63,6 +81,8 @@ func convert(files []string, outDir string, sampleRate float64) []string {
 			baseName = baseName[0:indexSuffix]
 		}
 
+		(*statusLabel).SetText("Writing " + path.Join(outDir, baseName+".wav"))
+
 		out, err := os.Create(path.Join(outDir, baseName+".wav"))
 		if err != nil {
 			failed = append(failed, file)
@@ -72,7 +92,11 @@ func convert(files []string, outDir string, sampleRate float64) []string {
 		writer := wav.NewWriter(wavout, uint32(len(samples)), track.channels, uint32(sampleRate), 16)
 		writer.WriteSamples(samples)
 		out.Close()
+
+		(*progress).Set(float64(3*i+3) * progressStep)
 	}
+
+	(*statusLabel).SetText("Idle")
 
 	return failed
 }
