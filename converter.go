@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dh1tw/gosamplerate"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/go-audio/aiff"
+	"github.com/go-audio/audio"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/mewkiz/flac"
 	"github.com/youpy/go-wav"
@@ -59,6 +62,12 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			}
 		case "audio/wav": // wav
 			track, err = decodeWav(file)
+			if err != nil {
+				failed = append(failed, file)
+				continue
+			}
+		case "audio/aiff": // aiff
+			track, err = decodeAiff(file)
 			if err != nil {
 				failed = append(failed, file)
 				continue
@@ -260,6 +269,51 @@ func decodeWav(file string) (Track, error) {
 	return Track{
 		data:       floatBuf,
 		sampleRate: float64(format.SampleRate),
+		channels:   outChannels,
+	}, nil
+}
+
+func decodeAiff(file string) (Track, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return Track{}, err
+	}
+	defer f.Close()
+
+	decoder := aiff.NewDecoder(io.ReadSeeker(f))
+	if !decoder.IsValidFile() {
+		return Track{}, errors.New("invalid aiff file")
+	}
+
+	floatBuf := make([]float32, 0)
+	intBuf := make([]int, 255)
+	ch := 0
+	buf := &audio.IntBuffer{Data: intBuf}
+	for {
+		n, err := decoder.PCMBuffer(buf)
+		if n == 0 {
+			break
+		}
+		if err != nil {
+			return Track{}, err
+		}
+
+		for _, val := range buf.AsFloat32Buffer().Data {
+			if ch < 2 {
+				floatBuf = append(floatBuf, val)
+			}
+			ch = (ch + 1) % int(decoder.NumChans)
+		}
+	}
+
+	outChannels := uint16(2)
+	if decoder.NumChans == 1 {
+		outChannels = 1
+	}
+
+	return Track{
+		data:       floatBuf,
+		sampleRate: float64(decoder.SampleRate),
 		channels:   outChannels,
 	}, nil
 }

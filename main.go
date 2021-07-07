@@ -9,8 +9,10 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/gabriel-vasile/mimetype"
 	"image/color"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -78,7 +80,12 @@ func main() {
 				return
 			}
 
-			inputFiles.Append(closer.URI().Path())
+			mimeType, err := mimetype.DetectFile(closer.URI().Path())
+			if isSupportedMimeType(mimeType) && err == nil {
+				inputFiles.Append(closer.URI().Path())
+			} else {
+				dialog.ShowInformation("Not supported", "Converting the file "+path.Base(closer.URI().Path())+" is not supported.\nUnsupported type: "+mimeType.String(), w)
+			}
 		}, w)
 	})
 	addDirButton := widget.NewButton("Add directory...", func() {

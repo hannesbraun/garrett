@@ -10,6 +10,7 @@ var supportedMimeTypes = []string{
 	"audio/mpeg",
 	"audio/flac",
 	"audio/wav",
+	"audio/aiff",
 }
 
 func filesFromDirectory(dir string) []string {
@@ -27,15 +28,7 @@ func filesFromDirectory(dir string) []string {
 				continue
 			}
 
-			supported := false
-			for _, supportedMimeType := range supportedMimeTypes {
-				if supportedMimeType == mimeType.String() {
-					supported = true
-					break
-				}
-			}
-
-			if supported {
+			if isSupportedMimeType(mimeType) {
 				result = append(result, path.Join(dir, item.Name()))
 			}
 		} else {
@@ -45,4 +38,14 @@ func filesFromDirectory(dir string) []string {
 	}
 
 	return result
+}
+
+func isSupportedMimeType(mimeType *mimetype.MIME) bool {
+	for _, supportedMimeType := range supportedMimeTypes {
+		if supportedMimeType == mimeType.String() {
+			return true
+		}
+	}
+
+	return false
 }
