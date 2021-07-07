@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"image/color"
 	"os"
+	"strings"
 )
 
 type garrettTheme struct{}
