@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gabriel-vasile/mimetype"
 	"io/ioutil"
 	"path"
 )
@@ -23,14 +24,14 @@ func filesFromDirectory(dir string) []string {
 
 	for _, item := range items {
 		if !item.IsDir() {
-			mimeType, err := getFileContentType(path.Join(dir, item.Name()))
+			mimeType, err := mimetype.DetectFile(path.Join(dir, item.Name()))
 			if err != nil {
 				continue
 			}
 
 			supported := false
 			for _, supportedMimeType := range supportedMimeTypes {
-				if supportedMimeType == mimeType {
+				if supportedMimeType == mimeType.String() {
 					supported = true
 					break
 				}

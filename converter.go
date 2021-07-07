@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dh1tw/gosamplerate"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/mewkiz/flac"
 	"github.com/youpy/go-wav"
@@ -28,21 +29,21 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		(*progress).Set(float64(3*i) * progressStep)
 		(*statusLabel).SetText("Decoding " + file)
 
-		mimeType, err := getFileContentType(file)
+		mimeType, err := mimetype.DetectFile(file)
 		if err != nil {
 			failed = append(failed, file)
 			continue
 		}
 
 		var track Track
-		switch mimeType {
-		case "audio/mpeg":
+		switch mimeType.String() {
+		case "audio/mpeg": // mp3
 			track, err = decodeMp3(file)
 			if err != nil {
 				failed = append(failed, file)
 				continue
 			}
-		case "audio/flac":
+		case "audio/flac": // flac
 			track, err = decodeFlac(file)
 			if err != nil {
 				failed = append(failed, file)

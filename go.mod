@@ -11,3 +11,5 @@ require github.com/dh1tw/gosamplerate v0.1.2
 require github.com/youpy/go-wav v0.1.0
 
 require github.com/mewkiz/flac v1.0.7
+
+require github.com/gabriel-vasile/mimetype v1.3.1
