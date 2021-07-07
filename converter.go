@@ -71,7 +71,6 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		(*progress).Set(float64(3*i+1) * progressStep)
 		updateStatus(statusLabel, "Resampling "+file)
 
-		// todo fix clicks
 		resampled := track.data
 		if sampleRate != track.sampleRate {
 			resampled, err = gosamplerate.Simple(track.data, sampleRate/track.sampleRate, int(track.channels), gosamplerate.SRC_SINC_BEST_QUALITY)
@@ -87,7 +86,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		// Todo support variable amount of channels
 		var samples []wav.Sample
 		for i := 0; i < len(resampled); i += 2 {
-			samples = append(samples, wav.Sample{Values: [2]int{int(resampled[i] * math.MaxInt16), int(resampled[i+1] * math.MaxInt16)}})
+			samples = append(samples, wav.Sample{Values: [2]int{clip16Bit(int(resampled[i] * math.MaxInt16)), clip16Bit(int(resampled[i+1] * math.MaxInt16))}})
 		}
 
 		baseName := path.Base(file)
@@ -114,6 +113,16 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 	updateStatus(statusLabel, "Idle")
 
 	return failed
+}
+
+func clip16Bit(sample int) int {
+	if sample < -32768 {
+		return -32768
+	} else if sample > 32767 {
+		return 32767
+	} else {
+		return sample
+	}
 }
 
 type Track struct {
