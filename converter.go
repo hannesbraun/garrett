@@ -35,7 +35,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 
 	for i, file := range files {
 		(*progress).Set(float64(3*i) * progressStep)
-		updateStatus(statusLabel, "Decoding " + file)
+		updateStatus(statusLabel, "Decoding "+file)
 
 		mimeType, err := mimetype.DetectFile(file)
 		if err != nil {
@@ -69,7 +69,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		}
 
 		(*progress).Set(float64(3*i+1) * progressStep)
-		updateStatus(statusLabel, "Resampling " + file)
+		updateStatus(statusLabel, "Resampling "+file)
 
 		// todo fix clicks
 		resampled := track.data
@@ -80,7 +80,6 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 				continue
 			}
 		}
-
 
 		(*progress).Set(float64(3*i+2) * progressStep)
 		updateStatus(statusLabel, "Assembling wave samples")
@@ -97,7 +96,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			baseName = baseName[0:indexSuffix]
 		}
 
-		updateStatus(statusLabel, "Writing " + path.Join(outDir, baseName+".wav"))
+		updateStatus(statusLabel, "Writing "+path.Join(outDir, baseName+".wav"))
 
 		out, err := os.Create(path.Join(outDir, baseName+".wav"))
 		if err != nil {
