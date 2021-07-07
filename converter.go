@@ -239,8 +239,8 @@ func decodeWav(file string) (Track, error) {
 		// Converting to float32
 		for _, sample := range samples {
 			// Iterate over channels
-			for i := uint16(0); i < channels; i++ {
-				floatBuf = append(floatBuf, float32(reader.FloatValue(sample, uint(i))))
+			for i := uint(0); i < 2; i++ {
+				floatBuf = append(floatBuf, float32(reader.FloatValue(sample, i)))
 			}
 		}
 	}
