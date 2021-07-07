@@ -153,10 +153,10 @@ func main() {
 		if running {
 			return
 		}
+		running = true
 
 		files, _ := inputFiles.Get()
 		go func(files []string, outDir string, sampleRate int, progress *binding.ExternalFloat, statusLabel **widget.Label) {
-			running = true
 			failed := convert(files, outDir, float64(sampleRate), progress, statusLabel)
 			if len(failed) > 0 {
 				filesStr := strings.Join(failed, "\n")
