@@ -51,10 +51,10 @@ func (garrettTheme) Size(name fyne.ThemeSizeName) float32 {
 }
 
 func main() {
-	app := app.New()
-	app.Settings().SetTheme(&garrettTheme{})
+	garrettApp := app.New()
+	garrettApp.Settings().SetTheme(&garrettTheme{})
 
-	w := app.NewWindow("Garrett")
+	w := garrettApp.NewWindow("Garrett")
 
 	inputFiles := binding.BindStringList(
 		&[]string{},
