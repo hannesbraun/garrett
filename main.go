@@ -157,7 +157,11 @@ func main() {
 		files, _ := inputFiles.Get()
 		go func(files []string, outDir string, sampleRate int, progress *binding.ExternalFloat, statusLabel **widget.Label) {
 			running = true
-			convert(files, outDir, float64(sampleRate), progress, statusLabel)
+			failed := convert(files, outDir, float64(sampleRate), progress, statusLabel)
+			if len(failed) > 0 {
+				filesStr := strings.Join(failed, "\n")
+				dialog.ShowInformation("Unable to convert the following files", filesStr, w)
+			}
 			running = false
 		}(files, outDir, sampleRate, &progress, &statusLabel)
 	})

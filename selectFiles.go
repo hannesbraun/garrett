@@ -36,9 +36,10 @@ func filesFromDirectory(dir string) []string {
 			}
 
 			if supported {
-				result = append(result, item.Name())
+				result = append(result, path.Join(dir, item.Name()))
 			}
 		} else {
+			// Search subdirectory
 			result = append(result, filesFromDirectory(path.Join(dir, item.Name()))...)
 		}
 	}
