@@ -57,6 +57,12 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 				failed = append(failed, file)
 				continue
 			}
+		case "audio/wav": // wav
+			track, err = decodeWav(file)
+			if err != nil {
+				failed = append(failed, file)
+				continue
+			}
 		default:
 			failed = append(failed, file)
 			continue
@@ -197,5 +203,48 @@ func decodeFlac(file string) (Track, error) {
 		data:       buf,
 		sampleRate: float64(sampleRate),
 		channels:   channels,
+	}, nil
+}
+
+func decodeWav(file string) (Track, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return Track{}, err
+	}
+	defer f.Close()
+
+	reader := wav.NewReader(f)
+	format, err := reader.Format()
+	if err != nil {
+		return Track{}, err
+	}
+	channels := format.NumChannels
+
+	floatBuf := make([]float32, 0)
+	for {
+		// Reading samples
+		samples, err := reader.ReadSamples()
+		if err == io.EOF {
+			break
+		}
+
+		// Converting to float32
+		for _, sample := range samples {
+			// Iterate over channels
+			for i := uint16(0); i < channels; i++ {
+				floatBuf = append(floatBuf, float32(reader.FloatValue(sample, uint(i))))
+			}
+		}
+	}
+
+	outChannels := uint16(2)
+	if channels == 1 {
+		outChannels = 1
+	}
+
+	return Track{
+		data:       floatBuf,
+		sampleRate: float64(format.SampleRate),
+		channels:   outChannels,
 	}, nil
 }

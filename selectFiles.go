@@ -8,10 +8,8 @@ import (
 
 var supportedMimeTypes = []string{
 	"audio/mpeg",
-	"audio/wave",
-	"audio/aiff",
 	"audio/flac",
-	"application/ogg",
+	"audio/wav",
 }
 
 func filesFromDirectory(dir string) []string {
