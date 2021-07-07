@@ -18,6 +18,14 @@ import (
 	"strings"
 )
 
+func updateStatus(statusLabel **widget.Label, text string) {
+	if len(text) > 95 {
+		(*statusLabel).SetText(text[:92] + "...")
+	} else {
+		(*statusLabel).SetText(text)
+	}
+}
+
 func convert(files []string, outDir string, sampleRate float64, progress *binding.ExternalFloat, statusLabel **widget.Label) []string {
 	failed := make([]string, 0)
 	if len(files) <= 0 {
@@ -27,7 +35,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 
 	for i, file := range files {
 		(*progress).Set(float64(3*i) * progressStep)
-		(*statusLabel).SetText("Decoding " + file)
+		updateStatus(statusLabel, "Decoding " + file)
 
 		mimeType, err := mimetype.DetectFile(file)
 		if err != nil {
@@ -55,7 +63,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		}
 
 		(*progress).Set(float64(3*i+1) * progressStep)
-		(*statusLabel).SetText("Resampling " + file)
+		updateStatus(statusLabel, "Resampling " + file)
 
 		// todo fix clicks
 		resampled := track.data
@@ -69,6 +77,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 
 
 		(*progress).Set(float64(3*i+2) * progressStep)
+		updateStatus(statusLabel, "Assembling wave samples")
 
 		// Todo support variable amount of channels
 		var samples []wav.Sample
@@ -82,7 +91,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			baseName = baseName[0:indexSuffix]
 		}
 
-		(*statusLabel).SetText("Writing " + path.Join(outDir, baseName+".wav"))
+		updateStatus(statusLabel, "Writing " + path.Join(outDir, baseName+".wav"))
 
 		out, err := os.Create(path.Join(outDir, baseName+".wav"))
 		if err != nil {
@@ -97,7 +106,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		(*progress).Set(float64(3*i+3) * progressStep)
 	}
 
-	(*statusLabel).SetText("Idle")
+	updateStatus(statusLabel, "Idle")
 
 	return failed
 }
