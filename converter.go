@@ -83,10 +83,17 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		(*progress).Set(float64(3*i+2) * progressStep)
 		updateStatus(statusLabel, "Assembling wave samples")
 
-		// Todo support variable amount of channels
 		var samples []wav.Sample
 		for i := 0; i < len(resampled); i += 2 {
-			samples = append(samples, wav.Sample{Values: [2]int{clip16Bit(int(resampled[i] * math.MaxInt16)), clip16Bit(int(resampled[i+1] * math.MaxInt16))}})
+			var sample [2]int
+			sample[0] = clip16Bit(int(resampled[i] * math.MaxInt16))
+			if i+1 < len(resampled) {
+				sample[1] = clip16Bit(int(resampled[i+1] * math.MaxInt16))
+			} else {
+				sample[1] = 0
+			}
+
+			samples = append(samples, wav.Sample{Values: sample})
 		}
 
 		baseName := path.Base(file)
@@ -102,8 +109,8 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			failed = append(failed, file)
 			continue
 		}
-		wavout := bufio.NewWriter(out)
-		writer := wav.NewWriter(wavout, uint32(len(samples)), track.channels, uint32(sampleRate), 16)
+		wavOut := bufio.NewWriter(out)
+		writer := wav.NewWriter(wavOut, uint32(len(samples)), track.channels, uint32(sampleRate), 16)
 		writer.WriteSamples(samples)
 		out.Close()
 
