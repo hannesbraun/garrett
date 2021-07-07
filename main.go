@@ -84,7 +84,11 @@ func main() {
 			if isSupportedMimeType(mimeType) && err == nil {
 				inputFiles.Append(closer.URI().Path())
 			} else {
-				dialog.ShowInformation("Not supported", "Converting the file "+path.Base(closer.URI().Path())+" is not supported.\nUnsupported type: "+mimeType.String(), w)
+				mimeTypeStr := "<unknown>"
+				if mimeType != nil {
+					mimeTypeStr = mimeType.String()
+				}
+				dialog.ShowInformation("Not supported", "Converting the file "+path.Base(closer.URI().Path())+" is not supported.\nUnsupported type: "+mimeTypeStr, w)
 			}
 		}, w)
 	})
