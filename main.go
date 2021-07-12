@@ -19,6 +19,8 @@ import (
 	"strings"
 )
 
+var VERSION = "0.1.0"
+
 // Custom theming
 
 var primaryColor = color.RGBA{
@@ -224,7 +226,7 @@ func main() {
 	bottomContainer := container.NewBorder(progressBar, nil, nil, startButton, statusLabel)
 
 	// "About"
-	copyrightLabel := canvas.NewText("  Copyright (C) 2021 Hannes Braun", garrettApp.Settings().Theme().Color(theme.ColorNameForeground, garrettApp.Settings().ThemeVariant()))
+	copyrightLabel := canvas.NewText("  Copyright (C) 2021 Hannes Braun | Version "+VERSION, garrettApp.Settings().Theme().Color(theme.ColorNameForeground, garrettApp.Settings().ThemeVariant()))
 	repoUrl, _ := url.Parse("https://github.com/hannesbraun/garrett")
 	repoHyperlink := widget.NewHyperlink("Visit this application's git repository", repoUrl)
 
