@@ -13,19 +13,22 @@ import (
 	"image/color"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
+
+var primaryColor = color.RGBA{
+	R: 0,
+	G: 0,
+	B: 0,
+	A: 0,
+}
 
 type garrettTheme struct{}
 
 func (m garrettTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	if name == theme.ColorNamePrimary {
-		return color.RGBA{
-			R: 43,
-			G: 176,
-			B: 120,
-			A: 255,
-		}
+	if name == theme.ColorNamePrimary && primaryColor.A != 0 {
+		return primaryColor
 	}
 
 	return theme.DefaultTheme().Color(name, variant)
@@ -51,6 +54,18 @@ func (garrettTheme) Size(name fyne.ThemeSizeName) float32 {
 }
 
 func main() {
+	if len(os.Args) > 1 {
+		value, err := strconv.ParseInt(strings.TrimPrefix(os.Args[1], "0x"), 16, 64)
+		if err == nil {
+			primaryColor = color.RGBA{
+				R: uint8((0xFF0000 & value) >> 16),
+				G: uint8((0x00FF00 & value) >> 8),
+				B: uint8(0x0000FF & value),
+				A: 255,
+			}
+		}
+	}
+
 	garrettApp := app.New()
 	garrettApp.Settings().SetTheme(&garrettTheme{})
 
