@@ -13,6 +13,7 @@ var supportedMimeTypes = []string{
 	"audio/aiff",
 }
 
+// Get convertable files from a directory (recursively)
 func filesFromDirectory(dir string) []string {
 	result := make([]string, 0)
 

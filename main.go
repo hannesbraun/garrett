@@ -17,6 +17,8 @@ import (
 	"strings"
 )
 
+// Custom theming
+
 var primaryColor = color.RGBA{
 	R: 0,
 	G: 0,
@@ -71,6 +73,7 @@ func main() {
 
 	w := garrettApp.NewWindow("Garrett")
 
+	// File list
 	inputFiles := binding.BindStringList(
 		&[]string{},
 	)
@@ -89,6 +92,8 @@ func main() {
 	list.OnUnselected = func(id widget.ListItemID) {
 		selected = inputFiles.Length() - 1
 	}
+
+	// List control buttons
 	addButton := widget.NewButton("Add...", func() {
 		dialog.ShowFileOpen(func(closer fyne.URIReadCloser, err error) {
 			if closer == nil || err != nil {
@@ -97,7 +102,10 @@ func main() {
 
 			mimeType, err := mimetype.DetectFile(closer.URI().Path())
 			if isSupportedMimeType(mimeType) && err == nil {
-				inputFiles.Append(closer.URI().Path())
+				err := inputFiles.Append(closer.URI().Path())
+				if err != nil {
+					dialog.ShowInformation("Error", "Unable to append the file "+path.Base(closer.URI().Path())+" to the list", w)
+				}
 			} else {
 				mimeTypeStr := "<unknown>"
 				if mimeType != nil {
@@ -114,12 +122,19 @@ func main() {
 			}
 
 			items := filesFromDirectory(uri.Path())
+			errOccurred := false
 			for _, item := range items {
-				inputFiles.Append(item)
+				err := inputFiles.Append(item)
+				if err != nil {
+					errOccurred = true
+				}
+			}
+
+			if errOccurred {
+				dialog.ShowInformation("Error", "Unable to append some files", w)
 			}
 		}, w)
 	})
-
 	removeButton := widget.NewButton("Remove", func() {
 		if selected >= inputFiles.Length() {
 			return
@@ -127,7 +142,11 @@ func main() {
 
 		in, _ := inputFiles.Get()
 		in = append(in[:selected], in[selected+1:]...)
-		inputFiles.Set(in)
+		err := inputFiles.Set(in)
+		if err != nil {
+			dialog.ShowInformation("Error", "Unable to remove the file "+path.Base(in[selected]), w)
+			return
+		}
 
 		if selected >= inputFiles.Length() {
 			selected = inputFiles.Length() - 1
@@ -135,11 +154,16 @@ func main() {
 	})
 	clearButton := widget.NewButton("Clear", func() {
 		in, _ := inputFiles.Get()
-		inputFiles.Set(in[:0])
+		err := inputFiles.Set(in[:0])
+		if err != nil {
+			dialog.ShowInformation("Error", "Unable to remove the file "+path.Base(in[selected]), w)
+			return
+		}
 		selected = 0
 	})
 	listControls := container.NewHBox(addButton, addDirButton, removeButton, clearButton)
 
+	// Output
 	outDirLabel := widget.NewLabel("Output directory")
 	outDir, err := os.Getwd()
 	if err != nil {
@@ -158,6 +182,7 @@ func main() {
 	})
 	outDirVal := container.NewBorder(nil, nil, nil, selectOutDirButton, outDirLabel2)
 
+	// Sample rate selection
 	sampleRateLabel := widget.NewLabel("Sample rate")
 	sampleRate := 48000
 	sampleRateButtons := widget.NewRadioGroup([]string{"44100 Hz", "48000 Hz"}, func(val string) {
@@ -169,8 +194,10 @@ func main() {
 	})
 	sampleRateButtons.SetSelected("48000 Hz")
 
+	// Assemble form
 	form := container.New(layout.NewFormLayout(), outDirLabel, outDirVal, sampleRateLabel, sampleRateButtons)
 
+	// Status and control "bar"
 	progressVal := 0.0
 	progress := binding.BindFloat(&progressVal)
 	progressBar := widget.NewProgressBarWithData(progress)
@@ -194,8 +221,8 @@ func main() {
 	})
 	bottomContainer := container.NewBorder(progressBar, nil, nil, startButton, statusLabel)
 
+	// Put everything together and run it
 	content := container.NewBorder(nil, container.NewVBox(listControls, form, widget.NewSeparator(), bottomContainer), nil, nil, list)
-
 	w.SetContent(content)
 	w.Resize(fyne.NewSize(768, 700))
 	w.ShowAndRun()

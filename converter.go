@@ -21,31 +21,38 @@ import (
 	"strings"
 )
 
+// Updates the status label
 func updateStatus(statusLabel **widget.Label, text string) {
 	if len(text) > 95 {
+		// Crop the text to avoid resizing the window
 		(*statusLabel).SetText(text[:92] + "...")
 	} else {
 		(*statusLabel).SetText(text)
 	}
 }
 
+// Runs the conversions
 func convert(files []string, outDir string, sampleRate float64, progress *binding.ExternalFloat, statusLabel **widget.Label) []string {
 	failed := make([]string, 0)
 	if len(files) <= 0 {
+		// No files; nothing to do
 		return failed
 	}
 	progressStep := 1.0 / (3.0 * float64(len(files)))
 
 	for i, file := range files {
-		(*progress).Set(float64(3*i) * progressStep)
+		// Update progress
+		_ = (*progress).Set(float64(3*i) * progressStep)
 		updateStatus(statusLabel, "Decoding "+file)
 
+		// Detect file type
 		mimeType, err := mimetype.DetectFile(file)
 		if err != nil {
 			failed = append(failed, file)
 			continue
 		}
 
+		// Decode the file
 		var track Track
 		switch mimeType.String() {
 		case "audio/mpeg": // mp3
@@ -77,9 +84,10 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			continue
 		}
 
-		(*progress).Set(float64(3*i+1) * progressStep)
+		_ = (*progress).Set(float64(3*i+1) * progressStep)
 		updateStatus(statusLabel, "Resampling "+file)
 
+		// Resample (if necessary)
 		resampled := track.data
 		if sampleRate != track.sampleRate {
 			resampled, err = gosamplerate.Simple(track.data, sampleRate/track.sampleRate, int(track.channels), gosamplerate.SRC_SINC_BEST_QUALITY)
@@ -89,12 +97,14 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			}
 		}
 
-		(*progress).Set(float64(3*i+2) * progressStep)
+		_ = (*progress).Set(float64(3*i+2) * progressStep)
 		updateStatus(statusLabel, "Assembling wave samples")
 
+		// Assemble wav samples
 		var samples []wav.Sample
 		for i := 0; i < len(resampled); i += 2 {
 			var sample [2]int
+			// Clipping is necessary since the signal may leave the default range from -1.0 to 1.0 while resampling
 			sample[0] = clip16Bit(int(resampled[i] * math.MaxInt16))
 			if i+1 < len(resampled) {
 				sample[1] = clip16Bit(int(resampled[i+1] * math.MaxInt16))
@@ -105,6 +115,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 			samples = append(samples, wav.Sample{Values: sample})
 		}
 
+		// Figure out the destination path
 		baseName := path.Base(file)
 		indexSuffix := strings.LastIndex(baseName, ".")
 		if indexSuffix > 0 {
@@ -113,6 +124,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 
 		updateStatus(statusLabel, "Writing "+path.Join(outDir, baseName+".wav"))
 
+		// Write wav file
 		out, err := os.Create(path.Join(outDir, baseName+".wav"))
 		if err != nil {
 			failed = append(failed, file)
@@ -120,10 +132,14 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		}
 		wavOut := bufio.NewWriter(out)
 		writer := wav.NewWriter(wavOut, uint32(len(samples)), track.channels, uint32(sampleRate), 16)
-		writer.WriteSamples(samples)
-		out.Close()
+		err = writer.WriteSamples(samples)
+		_ = out.Close()
+		if err != nil {
+			failed = append(failed, file)
+			continue
+		}
 
-		(*progress).Set(float64(3*i+3) * progressStep)
+		_ = out.Close()
 	}
 
 	updateStatus(statusLabel, "Idle")
@@ -174,7 +190,7 @@ func decodeMp3(file string) (Track, error) {
 	floatBuf := make([]float32, d.Length()/2)
 	for i = 0; i < d.Length(); i += 2 {
 		var sample int16
-		binary.Read(bytes.NewBuffer(buf[i:i+2]), binary.LittleEndian, &sample)
+		_ = binary.Read(bytes.NewBuffer(buf[i:i+2]), binary.LittleEndian, &sample)
 		floatBuf[i/2] = float32(sample) / math.MaxInt16
 	}
 
