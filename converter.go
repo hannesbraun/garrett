@@ -142,6 +142,7 @@ func convert(files []string, outDir string, sampleRate float64, progress *bindin
 		_ = out.Close()
 	}
 
+	_ = (*progress).Set(1.0)
 	updateStatus(statusLabel, "Idle")
 
 	return failed
