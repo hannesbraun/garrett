@@ -3,6 +3,7 @@ package main
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
@@ -11,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/gabriel-vasile/mimetype"
 	"image/color"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
@@ -221,9 +223,24 @@ func main() {
 	})
 	bottomContainer := container.NewBorder(progressBar, nil, nil, startButton, statusLabel)
 
+	// "About"
+	copyrightLabel := canvas.NewText("  Copyright (C) 2021 Hannes Braun", garrettApp.Settings().Theme().Color(theme.ColorNameForeground, garrettApp.Settings().ThemeVariant()))
+	repoUrl, _ := url.Parse("https://github.com/hannesbraun/garrett")
+	repoHyperlink := widget.NewHyperlink("Visit this application's git repository", repoUrl)
+
 	// Put everything together and run it
-	content := container.NewBorder(nil, container.NewVBox(listControls, form, widget.NewSeparator(), bottomContainer), nil, nil, list)
+	content := container.NewBorder(nil, container.NewVBox(listControls, form, dummy(), widget.NewSeparator(), dummy(), bottomContainer, dummy(), widget.NewSeparator(), dummy(), copyrightLabel, repoHyperlink), nil, nil, list)
 	w.SetContent(content)
 	w.Resize(fyne.NewSize(768, 700))
 	w.ShowAndRun()
+}
+
+func dummy() fyne.CanvasObject {
+	dummy := canvas.NewRectangle(color.RGBA{A: 0})
+	dummy.Resize(fyne.Size{
+		Width:  0,
+		Height: 0,
+	})
+	dummy.Show()
+	return dummy
 }
