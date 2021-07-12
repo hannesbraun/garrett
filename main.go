@@ -165,7 +165,7 @@ func main() {
 
 	// Output
 	outDirLabel := widget.NewLabel("Output directory")
-	outDir, err := os.Getwd()
+	outDir, err := os.UserHomeDir()
 	if err != nil {
 		outDir = "/"
 	}
