@@ -41,6 +41,10 @@ bash build.sh 0.1.0
 
 Replace `0.1.0` with the version number you're currently building.
 
+## License
+
+Garrett is licensed under the GNU General Public License v3.0. For more information see [LICENSE](LICENSE "GNU General Public License v3.0").
+
 ## Author
 
 Hannes Braun (hannesbraun@mail.de)
