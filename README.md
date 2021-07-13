@@ -1,5 +1,9 @@
 # Garrett
 
+Another conversion tool for audio files (and you probably don't even need it)
+
+![Garrett's user interface](screenshot.png)
+
 ## What does this software do?
 
 If you have to ask this question, you're probably not the target audience ;)
