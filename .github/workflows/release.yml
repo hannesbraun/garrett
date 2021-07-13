@@ -1,0 +1,70 @@
+name: 'Release Build'
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  linuxBuild:
+    name: 'Linux Build'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Install dependencies
+        run: sudo apt-get -y install libgl1-mesa-dev xorg-dev libsamplerate0-dev
+
+      - name: Install fyne utility
+        run: go get fyne.io/fyne/v2/cmd/fyne
+
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Package application
+        run: cd build/linux && bash build.sh ${{ steps.get_version.outputs.VERSION }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: garrett-linux64-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          path: build/linux/Garrett.tar.gz
+
+  macOsBuild:
+    name: 'macOS Build'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Install dependencies
+        run: brew install libsamplerate
+
+      - name: Install fyne utility
+        run: go get fyne.io/fyne/v2/cmd/fyne
+
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Package application
+        run: cd build/macos && bash build.sh ${{ steps.get_version.outputs.VERSION }}
+
+      - name: Zip application
+        run: cd build/macos && mkdir Garrett && mv Garrett.app Garrett && zip garrett.zip -r Garrett
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: garrett-macos-${{ steps.get_version.outputs.VERSION }}.zip
+          path: build/macos/garrett.zip
