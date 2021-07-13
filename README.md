@@ -17,6 +17,30 @@ The supported input formats are:
 The purpose of this originally was to provide a simple conversion interface without needing a lot of knowledge behind the scenes.
 The resulting audio files were primarily meant to be played on the x32 console from Behringer. However, this program can be used for other purposes too.
 
+## Installation
+
+For macOS and Linux, prebuilt binaries are available through [GitHub Releases](https://github.com/hannesbraun/garrett/releases).
+It should also work with Windows. However, this is not tested, and you need to build it yourself.
+
+### Building
+
+Make sure to install the required dependencies. This is primarily `libsamplerate`. See the GitHub Actions workflow files for more details.
+
+Install the Fyne utility with
+
+```bash
+go get fyne.io/fyne/v2/cmd/fyne
+```
+
+Then, package the application (in this example for macOS):
+
+```bash
+cd build/macos
+bash build.sh 0.1.0
+```
+
+Replace `0.1.0` with the version number you're currently building.
+
 ## Author
 
 Hannes Braun (hannesbraun@mail.de)
